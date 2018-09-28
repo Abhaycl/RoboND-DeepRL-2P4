@@ -107,7 +107,7 @@ Since it’s using velocity control to complete the first objective, the reward 
 
 However, to hone in on velocity control, the reward was issued as follows:
 
-```
+```C
   if (avgGoalDelta > 0)
   {
       if(distGoal > 0.001f)
@@ -138,7 +138,7 @@ However, since position control will be used to achieve objective 2, the reward 
 
 However, this time around instead of using the distance from the goal (distGoal) to drive the rewards, the smoothed moving average will be used, as follows:
 
-```
+```C
   if (avgGoalDelta > 0)
   {
       if(distGoal > 0.0f)
