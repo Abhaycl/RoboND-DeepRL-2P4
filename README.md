@@ -83,8 +83,8 @@ This project aims to create a Deep Q-Learning Network (DQN) and, with it, train 
 
 This project mainly leverages an existing DQN that gets instantiated with specific parameters to run the Robotic Arm. For Deep Reinforcement Learning to occur, reward functions and hyperparameters must be defined. To test the capabilities of DQN, two objectives were established:
 
-a. Have any part of the robot arm touch the object of interest, with at least a 90% accuracy for a minimum of 100 runs.
-b. Have only the gripper base of the robot arm touch the object, with at least an 80% accuracy for a minimum of 100 runs.
+* a. Have any part of the robot arm touch the object of interest, with at least a 90% accuracy for a minimum of 100 runs.
+* b. Have only the gripper base of the robot arm touch the object, with at least an 80% accuracy for a minimum of 100 runs.
 
 
 ## Reward Functions
