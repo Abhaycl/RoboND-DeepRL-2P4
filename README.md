@@ -49,21 +49,23 @@ The summary of the files and folders within repo is provided in the table below:
 
 | File/Folder               | Definition                                                                                                   |
 | :------------------------ | :----------------------------------------------------------------------------------------------------------- |
-| config/*                  | Folder that contains all the parameters and some values defined for you to help you get started rviz.        |
-| db/*                      | Folder that contains all the databases generated from the maps.                                              |
-| launch/*                  | Folder that contains all the launch files in ROS that allow us to execute more than one node simultaneously. |
-| meshes/*                  | Folder that contains all the parameterization of the sensors.                                                |
-| scrips/*                  | Folder that contains all the scripts for the execution of the different necessary tools.                     |
-| urdf/*                    | Folder that contains all the robot's URDF description.                                                       |
-| worlds/*                  | Folder that contains all the Gazebo worlds.                                                                  |
+| c/*                       | Folder that contains all the launch files in ROS that allow us to execute more than one node simultaneously. |
+| cuda/*                    | Folder that contains all the parameterization of the sensors.                                                |
+| docs/*                    | Folder that contains all the parameters and some values defined for you to help you get started rviz.        |
+| gazebo/*                  | Folder that contains all the databases generated from the maps.                                              |
+| lua/*                     | Folder that contains all the launch files in ROS that allow us to execute more than one node simultaneously. |
+| python/*                  | Folder that contains all the parameterization of the sensors.                                                |
+| samples/*                 | Folder that contains all the scripts for the execution of the different necessary tools.                     |
+| tools/*                   | Folder that contains all the robot's URDF description.                                                       |
+| utils/*                   | Folder that contains all the Gazebo worlds.                                                                  |
 | misc_images/*             | Folder containing the images of the project.                                                                 |
 |                           |                                                                                                              |
 | CMakeLists.txt            | Contains the System dependencies that are found with CMake's conventions.                                    |
-| frames.gv                 | Contains the robot transform tree frames.                                                                    |
-| frames.pdf                | Contains the robot transform tree frames in PDF format.                                                      |
-| package.xml               | Contains the slam_bot package.                                                                               |
+| CMakePreBuild.sh          | Contains the System dependencies that are found with CMake's conventions.                                    |
+| LICENSE.md                | Contains the System dependencies that are found with CMake's conventions.                                    |
 | README.md                 | Contains the project documentation.                                                                          |
 | README.pdf                | Contains the project documentation in PDF format.                                                            |
+| README_udacity.md         | Is the udacity documentation that contains how to configure and install the environment.                     |
 
 ---
 
@@ -140,11 +142,11 @@ However, this time around instead of using the distance from the goal (distGoal)
   if (avgGoalDelta > 0)
   {
       if(distGoal > 0.0f)
-	  {
+      {
           rewardHistory = REWARD_WIN * avgGoalDelta;
       }
       else if (distGoal == 0.0f)
-	  {
+      {
           rewardHistory = REWARD_WIN * 10.0f;
       }
   }
