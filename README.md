@@ -101,13 +101,13 @@ The robotic arm must never collide with the ground, therefore, a REWARD_LOSS of 
 
 Since it’s using velocity control to complete the first objective, the reward function setup for the process in between to control the robotic arm’s movement will different to the one that will be used for the second objective. As part of the generic solution, the average delta (avgGoalDelta) was calculated just as stated in the tasks lesson:
 
-```python
+```
   avgGoalDelta = (avgGoalDelta * alpha) + (distDelta * (1.0f - alpha));
 ```
 
 However, to hone in on velocity control, the reward was issued as follows:
 
-```python
+```
   if (avgGoalDelta > 0)
   {
       if(distGoal > 0.001f)
@@ -132,13 +132,13 @@ The robotic arm must never collide with the ground, therefore, a REWARD_LOSS of 
 
 However, since position control will be used to achieve objective 2, the reward function setup for the process will be different this time around. As part of the generic solution, the average delta (avgGoalDelta) was calculated just as stated in the tasks lesson (the same as for objective 1):
 
-```python
+```
   avgGoalDelta = (avgGoalDelta * alpha) + (distDelta * (1.0f - alpha));
 ```
 
 However, this time around instead of using the distance from the goal (distGoal) to drive the rewards, the smoothed moving average will be used, as follows:
 
-```python
+```
   if (avgGoalDelta > 0)
   {
       if(distGoal > 0.0f)
@@ -168,7 +168,7 @@ For both objectives, tuning the hyperparameter was an iteration process. Nonethe
 To achieve the first objective, to train the robotic arm to touch the target at any point, the following hyperparameters were used:
 
 | Hyperparameter  | Value    | Reason/Intuition/Comments                                                                    |
-| :-------------- | :------- | :------------------------------------------------------------------------------------------- |
+| :-------------- | :------: | :------------------------------------------------------------------------------------------- |
 | INPUT_WIDTH     | 64       | Reduced width since didn’t believe a higher one was required.                                |
 | INPUT_HEIGHT    | 64       | Reduced height since didn’t believe a higher one was required.                               |
 | OPTIMIZER       | RMSprop  | Started with Adam and SGD but looking at forums found that RMSprop also worked well. It did. |
@@ -183,7 +183,7 @@ To achieve the first objective, to train the robotic arm to touch the target at 
 #### Configuration of hyperparameters
 
 | Hyperparameter  | Value    | Reason/Intuition/Comments                                                                    |
-| :-------------- | :------- | :------------------------------------------------------------------------------------------- |
+| :-------------- | :------: | :------------------------------------------------------------------------------------------- |
 | INPUT_WIDTH     | 64       | Reduced width since didn’t believe a higher one was required.                                |
 | INPUT_HEIGHT    | 64       | Reduced height since didn’t believe a higher one was required.                               |
 | OPTIMIZER       | RMSprop  | Started with Adam and SGD but looking at forums found that RMSprop also worked well. It did. |
@@ -196,7 +196,7 @@ To achieve the first objective, to train the robotic arm to touch the target at 
 #### DQN API Settings
 
 | Parameter   | Value    |
-| :---------- | :------- |
+| :---------- | :------: |
 | EPS_START   | 0.8f     |
 | EPS_END     | 0.01f    |
 | EPS_DECAY   | 300      |
