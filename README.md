@@ -49,20 +49,20 @@ The summary of the files and folders within repo is provided in the table below:
 
 | File/Folder               | Definition                                                                                                   |
 | :------------------------ | :----------------------------------------------------------------------------------------------------------- |
-| c/*                       | Folder that contains all the launch files in ROS that allow us to execute more than one node simultaneously. |
-| cuda/*                    | Folder that contains all the parameterization of the sensors.                                                |
-| docs/*                    | Folder that contains all the parameters and some values defined for you to help you get started rviz.        |
-| gazebo/*                  | Folder that contains all the databases generated from the maps.                                              |
-| lua/*                     | Folder that contains all the launch files in ROS that allow us to execute more than one node simultaneously. |
-| python/*                  | Folder that contains all the parameterization of the sensors.                                                |
-| samples/*                 | Folder that contains all the scripts for the execution of the different necessary tools.                     |
-| tools/*                   | Folder that contains all the robot's URDF description.                                                       |
-| utils/*                   | Folder that contains all the Gazebo worlds.                                                                  |
+| c/*                       | Folder that contains all the C code of different functions.                                                  |
+| cuda/*                    | Folder that contains all the Cuda code of different functions.                                               |
+| docs/*                    | Folder that contains all the project documentation or reference images.                                      |
+| gazebo/*                  | Folder that contains all the main files of the project.                                                      |
+| lua/*                     | Folder that contains all the Lua code of different functions for DQN.                                        |
+| python/*                  | Folder that contains all the Python code of different functions for DQN.                                     |
+| samples/*                 | Folder that contains all the examples of previous laboratories catch and fruit.                              |
+| tools/*                   | Folder that contains all the DeepRL tools.                                                                   |
+| utils/*                   | Folder that contains all the C/C++ wrapper Linux utilities for NVIDIA Jetson TX1/TX2 - camera, HID, GStreamer, CUDA, OpenGL/XGL. |
 | misc_images/*             | Folder containing the images of the project.                                                                 |
 |                           |                                                                                                              |
 | CMakeLists.txt            | Contains the System dependencies that are found with CMake's conventions.                                    |
-| CMakePreBuild.sh          | Contains the System dependencies that are found with CMake's conventions.                                    |
-| LICENSE.md                | Contains the System dependencies that are found with CMake's conventions.                                    |
+| CMakePreBuild.sh          | Contains the script that automatically run from CMakeLists.txt.                                              |
+| LICENSE.md                | Contains the Nvidia software license.                                                                        |
 | README.md                 | Contains the project documentation.                                                                          |
 | README.pdf                | Contains the project documentation in PDF format.                                                            |
 | README_udacity.md         | Is the udacity documentation that contains how to configure and install the environment.                     |
@@ -81,7 +81,7 @@ The summary of the files and folders within repo is provided in the table below:
 ---
 ## Introduction
 
-This project aims to create a Deep Q-Learning Network (DQN) and, with it, train a robotic arm to meet certain objectives. The Robotic Arm used for this project is simulated on Gazebo and run and trains (learns) on the Nvidia Jetson TX2 Deep Reinforcement Learning platform.
+This project aims to create a Deep Q-Learning Network (DQN) and, with it, train a robotic arm to meet certain objectives. The Robotic Arm used for this project is simulated on Gazebo and run and trains (learns) on the Nvidia Jetson TX2 Deep Reinforcement Learning platform. This project is based on the Nvidia open source project "jetson-reinforcement" developed by [Dustin Franklin](https://github.com/dusty-nv).
 
 This project mainly leverages an existing DQN that gets instantiated with specific parameters to run the Robotic Arm. For Deep Reinforcement Learning to occur, reward functions and hyperparameters must be defined. To test the capabilities of DQN, two objectives were established:
 
@@ -101,7 +101,7 @@ The robotic arm must never collide with the ground, therefore, a REWARD_LOSS of 
 
 Since it’s using velocity control to complete the first objective, the reward function setup for the process in between to control the robotic arm’s movement will different to the one that will be used for the second objective. As part of the generic solution, the average delta (avgGoalDelta) was calculated just as stated in the tasks lesson:
 
-```
+```C
   avgGoalDelta = (avgGoalDelta * alpha) + (distDelta * (1.0f - alpha));
 ```
 
@@ -132,7 +132,7 @@ The robotic arm must never collide with the ground, therefore, a REWARD_LOSS of 
 
 However, since position control will be used to achieve objective 2, the reward function setup for the process will be different this time around. As part of the generic solution, the average delta (avgGoalDelta) was calculated just as stated in the tasks lesson (the same as for objective 1):
 
-```
+```C
   avgGoalDelta = (avgGoalDelta * alpha) + (distDelta * (1.0f - alpha));
 ```
 
