@@ -75,8 +75,8 @@
 //#define USE_LSTM      true
 //#define LSTM_SIZE     16
 // Challenger
-#define INPUT_WIDTH   128
-#define INPUT_HEIGHT  128
+#define INPUT_WIDTH   64
+#define INPUT_HEIGHT  64
 #define OPTIMIZER     "Adam"
 #define LEARNING_RATE 0.01f
 #define REPLAY_MEMORY 10000
