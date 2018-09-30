@@ -293,7 +293,7 @@ The code added specifically for objective 2 is:
 
 ## Results
 
-As seen in (Fig. 1 & Fig 2), both objectives were achieved. Meeting percentage accuracy for both scenarios right after 100 runs were executed.
+As seen in (Fig. 1 y Fig. 1a & Fig 2), both objectives were achieved. Meeting percentage accuracy for both scenarios right after 100 runs were executed.
 
 ### Objective 1
 
