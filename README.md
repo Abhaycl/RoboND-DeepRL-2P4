@@ -317,7 +317,7 @@ However, as with objective 1, the agent was also displayed hitting the ground ha
 
 Nonetheless, for the purpose of this project, the robotic arm exceeded the minimum accuracy of 80% reaching up to 86% accuracy after almost 200 runs.
 
-![alt text][image2]
+![alt text][image3]
 ###### Figure 2.- Gripper collision with target.
 
 | Task          | Total Runs   | Accuracy   |
@@ -384,7 +384,7 @@ The object will instantiate at different locations along the x-axis.
 
 A better result is foreseeable with larger input width and height value.
 
-![alt text][image3]
+![alt text][image4]
 ###### Challenger image.
 
 
