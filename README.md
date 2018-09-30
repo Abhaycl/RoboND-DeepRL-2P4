@@ -8,6 +8,7 @@ The objective of this project is to create a Deep Q-Learning Network (DQN) agent
 
 [image1]: ./misc_images/objective1.jpg "Objective 1"
 [image2]: ./misc_images/objective2.jpg "Objective 2"
+[image3]: ./misc_images/challenger.jpg "Chalenger"
 
 ---
 
@@ -79,6 +80,24 @@ The summary of the files and folders within repo is provided in the table below:
 ### Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
 
 ---
+## Abstract
+
+##### C++ API (application programming interface)  
+
+C++ API provides an interface to the Python code written with PyTorch, but the wrappers use Python’s low-level C to pass memory objects between the user’s application and Torch without extra copies. By using a compiled language (C/C++) instead of an interpreted one, performance is improved, and speeded up even more when GPU acceleration is leveraged.
+
+##### Gazebo Arm Plugin
+
+This plugin is responsible for creating the DQN agent and training it to learn to touch the prop. The gazebo plugin shared object file, `libgazeboArmPlugin.so`, attached to the robot model in `gazebo-arm.world`, is responsible for integrating the simulation environment with the RL agent. The plugin is defined in the `ArmPlugin.cpp` file, also located in the `gazebo` folder.
+
+The `ArmPlugin.cpp` file takes advantage of the C++ API. This plugin creates specific constructor and member functions for the class `ArmPlugin` defined in `ArmPlugin.h`. 
+
+ You can refer to the documentation for more details on the above：
+
+- [Subscribers in Gazebo](http://gazebosim.org/tutorials?tut=topics_subscribed)
+- [Gazebo API](http://osrf-distributions.s3.amazonaws.com/gazebo/api/dev/classgazebo_1_1transport_1_1Node.html#a13a67ebd4537a0057ae92f837bb3042f)
+
+
 ## Introduction
 
 This project aims to create a Deep Q-Learning Network (DQN) and, with it, train a robotic arm to meet certain objectives. The Robotic Arm used for this project is simulated on Gazebo and run and trains (learns) on the Nvidia Jetson TX2 Deep Reinforcement Learning platform. This project is based on the Nvidia open source project "jetson-reinforcement" developed by [Dustin Franklin](https://github.com/dusty-nv).
@@ -95,75 +114,13 @@ To achieve both objectives, rewards functions were configured slightly different
 
 ### Objective 1
 
-To meet objective 1, which is to have the robotic arm collide with the target object at any point, the approach taken was to use “velocity control” instead of position. To control velocity, a simple check was performed to observe whether the action was even or odd. Depending on the action check, actionVelDelta was either added or subtracted.
-
-The robotic arm must never collide with the ground, therefore, a REWARD_LOSS of 1 * 20 will be issued upon ground collision. However, if the arm collided with the target object, it would issue a REWARD_WIN of 1 * 10, meeting the objective and resulting in a “win” for that run. Another criteria was added, to encourage the arm to accomplish its objective before the episode was over (frame span). If the run exceeded the maximum number of frames per episode (maxEpisodeLength), which was set to 100, a REWARD_LOSS of 1 * 1000 would be issued. This would result in a “loss” for that run.
-
-Since it’s using velocity control to complete the first objective, the reward function setup for the process in between to control the robotic arm’s movement will different to the one that will be used for the second objective. As part of the generic solution, the average delta (avgGoalDelta) was calculated just as stated in the tasks lesson:
+To meet objective 1, which is to have the robotic arm collide with the target object at any point, the approach taken was to use “velocity control” instead of position.
 
 ```C
-  avgGoalDelta = (avgGoalDelta * alpha) + (distDelta * (1.0f - alpha));
+  #define VELOCITY_CONTROL true
 ```
 
-However, to hone in on velocity control, the reward was issued as follows:
-
-```C
-  if (avgGoalDelta > 0)
-  {
-      if(distGoal > 0.001f)
-      {
-          rewardHistory = REWARD_WIN / distGoal;
-      }
-      else if (distGoal < 0.001f || distGoal == 0.0f)
-      {
-          rewardHistory = REWARD_WIN / 2000.0f;
-      }
-  }
-```
-
-This approach encourages the arm to quickly reach the goal by increasing the reward (inversely proportional) as it gets close to the goal. However, once this arm gets to a certain point (close enough), the reward stops increasing and only issues a small reward, which should encourage the arm to slow down as it reaches the target.
-
-
-### Objective 2
-
-To meet objective 2, which is to have the robotic arm collide with the target object only with the gripper, velocity control was initially tested. After many attempts, it was decided to use “position control” instead of velocity. Since touching the target solely with the gripper, more finesse and joint control seemed to require more emphasis. To control position, a simple check was performed to observe whether the action was even or odd. Depending on the action check, actionJointDelta was either added or subtracted.
-
-The robotic arm must never collide with the ground, therefore, a REWARD_LOSS of 1 * 20 will be issued upon ground collision. However, if the gripper collided with the target object, it would issue a REWARD_WIN of 1 * 100, meeting the objective and resulting in a “win” for that run. For this objective, the emphasis was to get it to touch with the gripper (solely), which is why the reward is higher than for the previous objective. Also, another limitation was added, to encourage the arm to accomplish its objective before the episode was over (frame span). If the run exceeded the maximum number of frames per episode (maxEpisodeLength), which was set to 100, a REWARD_LOSS of 1 would be issued. This would result in a “loss” for that run. Although the objective is still to collide with the target within one run/episode, some emphasis was taken away from this limitation given that velocity control has been replaced by position control.
-
-However, since position control will be used to achieve objective 2, the reward function setup for the process will be different this time around. As part of the generic solution, the average delta (avgGoalDelta) was calculated just as stated in the tasks lesson (the same as for objective 1):
-
-```C
-  avgGoalDelta = (avgGoalDelta * alpha) + (distDelta * (1.0f - alpha));
-```
-
-However, this time around instead of using the distance from the goal (distGoal) to drive the rewards, the smoothed moving average will be used, as follows:
-
-```C
-  if (avgGoalDelta > 0)
-  {
-      if(distGoal > 0.0f)
-      {
-          rewardHistory = REWARD_WIN * avgGoalDelta;
-      }
-      else if (distGoal == 0.0f)
-      {
-          rewardHistory = REWARD_WIN * 10.0f;
-      }
-  }
-  else
-  {
-      rewardHistory = REWARD_LOSS * distGoal;
-  }
-```
-
-This approach focuses on the movement, encouraging the robotic arm to move more. The more it moves towards the goal, the more rewards it will get (proportional to avgGoalDelta). However, once the arm at 0 distance away from the it would provide an extra reward. Furthermore, if not moving towards the goal, it would issue a REWARD_LOSS proportional to the distance to the goal (distGoal). At least that’s the theory behind this approach.
-
-
-## Hyperparameters
-
-For both objectives, tuning the hyperparameter was an iteration process. Nonetheless some thought was put into selecting them.
-
-### Objective 1
+#### Hyperparameters
 
 To achieve the first objective, to train the robotic arm to touch the target at any point, the following hyperparameters were used:
 
@@ -171,35 +128,166 @@ To achieve the first objective, to train the robotic arm to touch the target at 
 | :-------------- | :------: | :------------------------------------------------------------------------------------------- |
 | INPUT_WIDTH     | 64       | Reduced width since didn’t believe a higher one was required.                                |
 | INPUT_HEIGHT    | 64       | Reduced height since didn’t believe a higher one was required.                               |
-| OPTIMIZER       | RMSprop  | Started with Adam and SGD but looking at forums found that RMSprop also worked well. It did. |
-| LEARNING_RATE   | 0.2f     | Iterated from 0.5f to 0.2f.                                                                  |
+| OPTIMIZER       | RMSprop  | Started with RMSprop and SGD but looking at forums found that Adam also worked well. It did. |
+| LEARNING_RATE   | 0.05f    | Iterated from 0.05f to 0.02f.                                                                |
 | REPLAY_MEMORY   | 10000    | Stayed the same as the lesson suggested.                                                     |
-| BATCH_SIZE      | 16       | Thought it required deeper learning than 8 batches.                                          |
-| USE_LSTM        | True     | Improves learning from past experiences.                                                     |
+| BATCH_SIZE      | 32       | Thought it required deeper learning than 8 batches.                                          |
+| USE_LSTM        | true     | Improves learning from past experiences.                                                     |
 | LSTM_SIZE       | 256      | Seemed like 32 was not working so iterated until 256.                                        |
+| REWARD_WIN      | 10       | Value of reward when the objective is reached.                                               |
+| REWARD_LOSS     | -10      | Value of reward when the objective isn't reached.                                            |
+
+The code added specifically for objective 1 is:
+
+* Issue a reward based on collision between the desired arm part and the object.
+
+```C
+		if((strcmp(contacts->contact(i).collision1().c_str(), COLLISION_ITEM) == 0))
+		{
+			rewardHistory = REWARD_WIN;
+			newReward = true;
+			endEpisode = true;
+			return;
+		}
+		else
+		{
+			// Give penalty for non correct collisions
+			rewardHistory = REWARD_LOSS;
+			newReward = true;
+			endEpisode = true;
+		}
+```
+
+* Set appropriate Reward for robot hitting the ground.
+
+```C
+		bool checkGroundContact = false;
+		if( gripBBox.min.z < groundContact ){checkGroundContact = true;}
+
+		if( checkGroundContact )
+		{
+			printf("GROUND CONTACT, EOE\n");
+			rewardHistory = REWARD_LOSS * 20.0f;
+			newReward = true;
+			endEpisode = true;
+		}
+```
+
+* Issue an interim reward based on the distance to the object. A `distPenalty` reward is added to encourage arm approach the object quickly for the intermediary reward.
+
+```C
+		if( !checkGroundContact )
+		{
+			const float distGoal = BoxDistance(gripBBox, propBBox); // Compute the reward from distance to the goal
+
+			if(DEBUG){printf("Distance('%s', '%s') = %f\n", gripper->GetName().c_str(), prop->model->GetName().c_str(), distGoal);}
+
+			if( episodeFrames > 1 )
+			{
+				const float distDelta = lastGoalDistance - distGoal;
+				const float alpha = 0.2f;
+
+				// Compute the smoothed moving average of the delta of the distance to the goal
+				avgGoalDelta = (avgGoalDelta * alpha) + (distDelta * (1.0f - alpha));
+
+				float distPenalty = (1.0f - exp(distGoal));
+				float distGoalx = gripBBox.max.x - propBBox.max.x;
+
+				if(avgGoalDelta > 0)
+					{rewardHistory = REWARD_WIN * 0.5f - distGoal * 0.5f + distPenalty;}
+				else
+					{rewardHistory = avgGoalDelta + distPenalty;}
+				newReward = true;
+			}
+			lastGoalDistance = distGoal;
+		}
+```
+
 
 ### Objective 2
 
-#### Configuration of hyperparameters
+To meet objective 2, which is to have the robotic gripper base collide with the target object, the approach taken was to use “position control” instead of velocity.
+
+```C
+  #define VELOCITY_CONTROL false
+```
+
+#### Hyperparameters
+
+To achieve the second objective, to train the robotic gripper base collide with the target object, the following hyperparameters were used:
 
 | Hyperparameter  | Value    | Reason/Intuition/Comments                                                                    |
 | :-------------- | :------: | :------------------------------------------------------------------------------------------- |
 | INPUT_WIDTH     | 64       | Reduced width since didn’t believe a higher one was required.                                |
 | INPUT_HEIGHT    | 64       | Reduced height since didn’t believe a higher one was required.                               |
-| OPTIMIZER       | RMSprop  | Started with Adam and SGD but looking at forums found that RMSprop also worked well. It did. |
-| LEARNING_RATE   | 0.1f     | Requiring a more specific action, deeper learning was required for the second objective.     |
+| OPTIMIZER       | Adam     | Started with Adam and SGD but looking at forums found that RMSprop also worked well. It did. |
+| LEARNING_RATE   | 0.01f    | Iterated from 0.01f to 0.0f.                                                                 |
 | REPLAY_MEMORY   | 10000    | Stayed the same as the lesson suggested.                                                     |
-| BATCH_SIZE      | 32       | Deeper learning than for the first objective was required.                                   |
-| USE_LSTM        | True     | Improves learning from past experiences.                                                     |
-| LSTM_SIZE       | 256      | Seemed like 32 was not working so iterated until 256.                                        |
+| BATCH_SIZE      | 128      | Thought it required deeper learning than 8 batches.                                          |
+| USE_LSTM        | true     | Improves learning from past experiences.                                                     |
+| LSTM_SIZE       | 16       | Seemed like 256 was not working so iterated until 16.                                        |
+| REWARD_WIN      | 1        | Value of reward when the objective is reached.                                               |
+| REWARD_LOSS     | -1       | Value of reward when the objective isn't reached.                                            |
 
 #### DQN API Settings
 
-| Parameter   | Value    |
-| :---------- | :------: |
-| EPS_START   | 0.8f     |
-| EPS_END     | 0.01f    |
-| EPS_DECAY   | 300      |
+| Parameter   | Value    | Reason/Intuition/Comments                                                         |
+| :---------- | :------: | :-------------------------------------------------------------------------------- |
+| EPS_END     | 0.01f    | Is reduced to 0.01 so that the robot arm is more stable when it finish learning.  |
+
+*Note:* `EPS_DECAY` can be reduced if your reward function is appropriate. The premises is your robot should find the right way within this epochs. This can save lots of time when you try to save your final result.
+
+The code added specifically for objective 2 is:
+
+* Check if there is collision between the arm and object, then issue learning reward.
+
+```C
+		if((strcmp(contacts->contact(i).collision1().c_str(), COLLISION_ITEM) == 0))
+		{
+			if((strcmp(contacts->contact(i).collision2().c_str(), COLLISION_POINT) == 0))
+			{
+				rewardHistory = REWARD_WIN * 10.0f + (1.0f - (float(episodeFrames) / float(maxEpisodeLength))) * REWARD_WIN * 100.0f;
+				newReward = true;
+				endEpisode = true;
+				return;
+			}
+			else
+			{
+				// Give penalty for non correct collisions
+				rewardHistory = REWARD_LOSS;
+				newReward = true;
+				endEpisode = true;
+			}
+		}
+```
+
+* Issue an interim reward based on the distance to the object.
+
+```C
+		if( !checkGroundContact )
+		{
+			const float distGoal = BoxDistance(gripBBox, propBBox); // Compute the reward from distance to the goal
+
+			if(DEBUG){printf("Distance('%s', '%s') = %f\n", gripper->GetName().c_str(), prop->model->GetName().c_str(), distGoal);}
+
+			if( episodeFrames > 1 )
+			{
+				const float distDelta = lastGoalDistance - distGoal;
+				const float alpha = 0.9f;
+
+				// Compute the smoothed moving average of the delta of the distance to the goal
+				avgGoalDelta = (avgGoalDelta * alpha) + (distDelta * (1.0f - alpha));
+				float distPenalty = (1.0f - exp(distGoal));
+
+                if(avgGoalDelta > 0.01)
+					{rewardHistory = (REWARD_WIN + distPenalty * 0.1f) * 0.1f;}
+				else
+					{rewardHistory = REWARD_LOSS - distGoal * 2.0f;}
+				newReward = true;
+			}
+			lastGoalDistance = distGoal;
+		}
+```
 
 
 ## Results
@@ -215,6 +303,10 @@ It was noted that it kept trying to explore other ways to tackle the problem, ob
 ![alt text][image1]
 ###### Figure 1.- Arm collision with target.
 
+| Task    | Total Runs   | Accuracy   |
+| :------ | :----------: | :--------: |
+| Arm     | 18           | 90.00%     |
+
 
 ### Objective 2
 
@@ -227,8 +319,72 @@ Nonetheless, for the purpose of this project, the robotic arm exceeded the minim
 ![alt text][image2]
 ###### Figure 2.- Gripper collision with target.
 
+| Task          | Total Runs   | Accuracy   |
+| :------------ | :----------: | :--------: |
+| Gripper base  | 112          | 80.00%     |
 
-## Discussion
+
+### Challenges
+
+##### Challenge1: Object Randomization
+
+Two set this challenge1 environment, the following steps:
+
+1. In `PropPlugin.cpp`, redefine the prop poses in `PropPlugin::Randomize()` to the following:
+
+```C
+  pose.pos.x = randf(0.35f, 0.45f);
+  pose.pos.y = randf(-1.5f, 0.2f);
+  pose.pos.z = 0.0f;
+```
+
+2. In `ArmPlugin.cpp`, replace `ResetPropDynamics();` set in the method `ArmPlugin::updateJoints()` with `RandomizeProps();`
+
+The object will instantiate at different locations along the x-axis.
+
+* Use a larger `INPUT_WIDTH` and `INPUT_HEIGHT` value to distinguish object more clear.
+
+```C
+  #define INPUT_WIDTH   128
+  #define INPUT_HEIGHT  128
+```
+
+* Revise the intermediary reward, give more penalty for arm stop
+
+```C
+		if( !checkGroundContact )
+		{
+			const float distGoal = BoxDistance(gripBBox, propBBox); // Compute the reward from distance to the goal
+
+			if(DEBUG){printf("Distance('%s', '%s') = %f\n", gripper->GetName().c_str(), prop->model->GetName().c_str(), distGoal);}
+
+			if( episodeFrames > 1 )
+			{
+				const float distDelta = lastGoalDistance - distGoal;
+				const float alpha = 0.9f;
+
+				// Compute the smoothed moving average of the delta of the distance to the goal
+				avgGoalDelta = (avgGoalDelta * alpha) + (distDelta * (1.0f - alpha));
+				float distPenalty = (1.0f - exp(distGoal));
+
+                if(avgGoalDelta > 0.01)
+					{rewardHistory = (REWARD_WIN + distPenalty * 0.1f) * 0.1f;}
+				else
+					{rewardHistory = REWARD_LOSS - distGoal * 2.0f;}
+				newReward = true;
+			}
+			lastGoalDistance = distGoal;
+		}
+```
+
+3. In `gazebo-arm.world`, modify the tube model’s pose to `[0.75 0.75 0 0 0 0]`.
+
+4. In `ArmPlugin.cpp`, set the variable `LOCKBASE` to `false`.
+
+A better result is foreseeable with larger input width and height value.
+
+![alt text][image3]
+###### Challenger image.
 
 
 ## Future Work
