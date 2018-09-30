@@ -821,7 +821,7 @@ void ArmPlugin::OnUpdate(const common::UpdateInfo& updateInfo)
 				avgGoalDelta = (avgGoalDelta * alpha) + (distDelta * (1.0f - alpha));
 				float distPenalty = (1.0f - exp(distGoal));
 
-                if(avgGoalDelta > 0.01)
+				if(avgGoalDelta > 0.01)
 					{rewardHistory = (REWARD_WIN + distPenalty * 0.1f) * 0.1f;}
 				else
 					{rewardHistory = REWARD_LOSS - distGoal * 2.0f;}
@@ -845,7 +845,7 @@ void ArmPlugin::OnUpdate(const common::UpdateInfo& updateInfo)
 				avgGoalDelta = (avgGoalDelta * alpha) + (distDelta * (1.0f - alpha));
 				float distPenalty = (1.0f - exp(distGoal));
 
-                if(avgGoalDelta > 0.01)
+				if(avgGoalDelta > 0.01)
 					{rewardHistory = (REWARD_WIN + distPenalty * 0.1f) * 0.1f;}
 				else
 					{rewardHistory = REWARD_LOSS - distGoal * 2.0f;}
