@@ -60,9 +60,9 @@
 //#define INPUT_WIDTH   64
 //#define INPUT_HEIGHT  64
 //#define OPTIMIZER     "RMSprop"
-//#define LEARNING_RATE 0.05f
+//#define LEARNING_RATE 0.05f  //opcion1 = 0.2f
 //#define REPLAY_MEMORY 10000
-//#define BATCH_SIZE    32
+//#define BATCH_SIZE    32  //opcion1 = 16
 //#define USE_LSTM      true
 //#define LSTM_SIZE     256
 // Objective 2
@@ -107,6 +107,7 @@
 #define COLLISION_FILTER "ground_plane::link::collision"
 #define COLLISION_ITEM   "tube::tube_link::tube_collision"
 #define COLLISION_POINT  "arm::gripperbase::gripper_link"
+//#define COLLISION_LINK   "arm::link2::collision2" //opcion1
 #define COLLISION_MIDDLE "arm::gripper_middle::middle_collision"
 
 // Animation Steps
@@ -345,6 +346,9 @@ void ArmPlugin::onCollisionMsg(ConstContactsPtr &contacts)
 			return;
 		}*/
 		// Objective 1
+		// El código de abajo se puede poner si se ponen las opcion1
+		/*bool collisionCheck = ((strcmp(contacts->contact(i).collision1().c_str(), COLLISION_ITEM) == 0) || (strcmp(contacts->contact(i).collision2().c_str(), COLLISION_LINK) == 0)) ? true : false;
+		if (collisionCheck)*/
 		/*if((strcmp(contacts->contact(i).collision1().c_str(), COLLISION_ITEM) == 0))
 		{
 			rewardHistory = REWARD_WIN;
@@ -352,7 +356,7 @@ void ArmPlugin::onCollisionMsg(ConstContactsPtr &contacts)
 			endEpisode = true;
 			return;
 		}
-		else
+		else  //Se puede quitar el else si se ponen las opcion1
 		{
 			// Give penalty for non correct collisions
 			rewardHistory = REWARD_LOSS;
