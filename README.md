@@ -6,9 +6,10 @@ The objective of this project is to create a Deep Q-Learning Network (DQN) agent
 
 [//]: # (Image References)
 
-[image1]: ./misc_images/objective1.jpg "Objective 1"
-[image2]: ./misc_images/objective2.jpg "Objective 2"
-[image3]: ./misc_images/challenger.jpg "Chalenger"
+[image1]: ./misc_images/objective1.jpg "Objective 1 minus 100 runs"
+[image2]: ./misc_images/objective1a.jpg "Objective 1 over 100 runs"
+[image3]: ./misc_images/objective2.jpg "Objective 2 over 100 runs"
+[image4]: ./misc_images/challenger.jpg "Chalenger"
 
 ---
 
@@ -48,25 +49,25 @@ For run the project open a terminal:
 
 The summary of the files and folders within repo is provided in the table below:
 
-| File/Folder               | Definition                                                                                                   |
-| :------------------------ | :----------------------------------------------------------------------------------------------------------- |
-| c/*                       | Folder that contains all the C code of different functions.                                                  |
-| cuda/*                    | Folder that contains all the Cuda code of different functions.                                               |
-| docs/*                    | Folder that contains all the project documentation or reference images.                                      |
-| gazebo/*                  | Folder that contains all the main files of the project.                                                      |
-| lua/*                     | Folder that contains all the Lua code of different functions for DQN.                                        |
-| python/*                  | Folder that contains all the Python code of different functions for DQN.                                     |
-| samples/*                 | Folder that contains all the examples of previous laboratories catch and fruit.                              |
-| tools/*                   | Folder that contains all the DeepRL tools.                                                                   |
-| utils/*                   | Folder that contains all the C/C++ wrapper Linux utilities for NVIDIA Jetson TX1/TX2 - camera, HID, GStreamer, CUDA, OpenGL/XGL. |
-| misc_images/*             | Folder containing the images of the project.                                                                 |
-|                           |                                                                                                              |
-| CMakeLists.txt            | Contains the System dependencies that are found with CMake's conventions.                                    |
-| CMakePreBuild.sh          | Contains the script that automatically run from CMakeLists.txt.                                              |
-| LICENSE.md                | Contains the Nvidia software license.                                                                        |
-| README.md                 | Contains the project documentation.                                                                          |
-| README.pdf                | Contains the project documentation in PDF format.                                                            |
-| README_udacity.md         | Is the udacity documentation that contains how to configure and install the environment.                     |
+| File/Folder        | Definition                                                                                                   |
+| :----------------- | :----------------------------------------------------------------------------------------------------------- |
+| c/*                | Folder that contains all the C code of different functions.                                                  |
+| cuda/*             | Folder that contains all the Cuda code of different functions.                                               |
+| docs/*             | Folder that contains all the project documentation or reference images.                                      |
+| gazebo/*           | Folder that contains all the main files of the project.                                                      |
+| lua/*              | Folder that contains all the Lua code of different functions for DQN.                                        |
+| python/*           | Folder that contains all the Python code of different functions for DQN.                                     |
+| samples/*          | Folder that contains all the examples of previous laboratories catch and fruit.                              |
+| tools/*            | Folder that contains all the DeepRL tools.                                                                   |
+| utils/*            | Folder that contains all the C/C++ wrapper Linux utilities for NVIDIA Jetson TX1/TX2 - camera, HID, GStreamer, CUDA, OpenGL/XGL. |
+| misc_images/*      | Folder containing the images of the project.                                                                 |
+|                    |                                                                                                              |
+| CMakeLists.txt     | Contains the System dependencies that are found with CMake's conventions.                                    |
+| CMakePreBuild.sh   | Contains the script that automatically run from CMakeLists.txt.                                              |
+| LICENSE.md         | Contains the Nvidia software license.                                                                        |
+| README.md          | Contains the project documentation.                                                                          |
+| README.pdf         | Contains the project documentation in PDF format.                                                            |
+| README_udacity.md  | Is the udacity documentation that contains how to configure and install the environment.                     |
 
 ---
 
@@ -117,7 +118,7 @@ To achieve both objectives, rewards functions were configured slightly different
 To meet objective 1, which is to have the robotic arm collide with the target object at any point, the approach taken was to use “velocity control” instead of position.
 
 ```C
-  #define VELOCITY_CONTROL true
+    #define VELOCITY_CONTROL true
 ```
 
 #### Hyperparameters
@@ -142,65 +143,65 @@ The code added specifically for objective 1 is:
 * Issue a reward based on collision between the desired arm part and the object.
 
 ```C
-		if((strcmp(contacts->contact(i).collision1().c_str(), COLLISION_ITEM) == 0))
-		{
-			rewardHistory = REWARD_WIN;
-			newReward = true;
-			endEpisode = true;
-			return;
-		}
-		else
-		{
-			// Give penalty for non correct collisions
-			rewardHistory = REWARD_LOSS;
-			newReward = true;
-			endEpisode = true;
-		}
+    if((strcmp(contacts->contact(i).collision1().c_str(), COLLISION_ITEM) == 0))
+    {
+        rewardHistory = REWARD_WIN;
+        newReward = true;
+        endEpisode = true;
+        return;
+    }
+    else
+    {
+        // Give penalty for non correct collisions
+        rewardHistory = REWARD_LOSS;
+        newReward = true;
+        endEpisode = true;
+    }
 ```
 
 * Set appropriate Reward for robot hitting the ground.
 
 ```C
-		bool checkGroundContact = false;
-		if( gripBBox.min.z < groundContact ){checkGroundContact = true;}
+    bool checkGroundContact = false;
+    if( gripBBox.min.z < groundContact ){checkGroundContact = true;}
 
-		if( checkGroundContact )
-		{
-			printf("GROUND CONTACT, EOE\n");
-			rewardHistory = REWARD_LOSS * 20.0f;
-			newReward = true;
-			endEpisode = true;
-		}
+    if( checkGroundContact )
+    {
+        printf("GROUND CONTACT, EOE\n");
+        rewardHistory = REWARD_LOSS * 20.0f;
+        newReward = true;
+        endEpisode = true;
+    }
 ```
 
 * Issue an interim reward based on the distance to the object. A `distPenalty` reward is added to encourage arm approach the object quickly for the intermediary reward.
 
 ```C
-		if( !checkGroundContact )
-		{
-			const float distGoal = BoxDistance(gripBBox, propBBox); // Compute the reward from distance to the goal
+    if( !checkGroundContact )
+    {
+        const float distGoal = BoxDistance(gripBBox, propBBox); // Compute the reward from distance to the goal
 
-			if(DEBUG){printf("Distance('%s', '%s') = %f\n", gripper->GetName().c_str(), prop->model->GetName().c_str(), distGoal);}
+        if(DEBUG){printf("Distance('%s', '%s') = %f\n", gripper->GetName().c_str(), prop->model->GetName().c_str(), distGoal);}
 
-			if( episodeFrames > 1 )
-			{
-				const float distDelta = lastGoalDistance - distGoal;
-				const float alpha = 0.2f;
+        if( episodeFrames > 1 )
+        {
+            const float distDelta = lastGoalDistance - distGoal;
+            const float alpha = 0.2f;
 
-				// Compute the smoothed moving average of the delta of the distance to the goal
-				avgGoalDelta = (avgGoalDelta * alpha) + (distDelta * (1.0f - alpha));
+            // Compute the smoothed moving average of the delta of the distance to the goal
+            avgGoalDelta = (avgGoalDelta * alpha) + (distDelta * (1.0f - alpha));
 
-				float distPenalty = (1.0f - exp(distGoal));
-				float distGoalx = gripBBox.max.x - propBBox.max.x;
+            float distPenalty = (1.0f - exp(distGoal));
+            float distGoalx = gripBBox.max.x - propBBox.max.x;
 
-				if(avgGoalDelta > 0)
-					{rewardHistory = REWARD_WIN * 0.5f - distGoal * 0.5f + distPenalty;}
-				else
-					{rewardHistory = avgGoalDelta + distPenalty;}
-				newReward = true;
-			}
-			lastGoalDistance = distGoal;
-		}
+            if(avgGoalDelta > 0)
+                {rewardHistory = REWARD_WIN * 0.5f - distGoal * 0.5f + distPenalty;}
+            else
+                {rewardHistory = avgGoalDelta + distPenalty;}
+            newReward = true;
+        }
+        lastGoalDistance = distGoal;
+    }
 ```
 
 
@@ -209,7 +210,7 @@ The code added specifically for objective 1 is:
 To meet objective 2, which is to have the robotic gripper base collide with the target object, the approach taken was to use “position control” instead of velocity.
 
 ```C
-  #define VELOCITY_CONTROL false
+    #define VELOCITY_CONTROL false
 ```
 
 #### Hyperparameters
@@ -242,51 +243,51 @@ The code added specifically for objective 2 is:
 * Check if there is collision between the arm and object, then issue learning reward.
 
 ```C
-		if((strcmp(contacts->contact(i).collision1().c_str(), COLLISION_ITEM) == 0))
-		{
-			if((strcmp(contacts->contact(i).collision2().c_str(), COLLISION_POINT) == 0))
-			{
-				rewardHistory = REWARD_WIN * 10.0f + (1.0f - (float(episodeFrames) / float(maxEpisodeLength))) * REWARD_WIN * 100.0f;
-				newReward = true;
-				endEpisode = true;
-				return;
-			}
-			else
-			{
-				// Give penalty for non correct collisions
-				rewardHistory = REWARD_LOSS;
-				newReward = true;
-				endEpisode = true;
-			}
-		}
+    if((strcmp(contacts->contact(i).collision1().c_str(), COLLISION_ITEM) == 0))
+    {
+        if((strcmp(contacts->contact(i).collision2().c_str(), COLLISION_POINT) == 0))
+        {
+            rewardHistory = REWARD_WIN * 10.0f + (1.0f - (float(episodeFrames) / float(maxEpisodeLength))) * REWARD_WIN * 100.0f;
+            newReward = true;
+            endEpisode = true;
+            return;
+        }
+        else
+        {
+            // Give penalty for non correct collisions
+            rewardHistory = REWARD_LOSS;
+            newReward = true;
+            endEpisode = true;
+        }
+    }
 ```
 
 * Issue an interim reward based on the distance to the object.
 
 ```C
-		if( !checkGroundContact )
-		{
-			const float distGoal = BoxDistance(gripBBox, propBBox); // Compute the reward from distance to the goal
+    if( !checkGroundContact )
+    {
+        const float distGoal = BoxDistance(gripBBox, propBBox); // Compute the reward from distance to the goal
 
-			if(DEBUG){printf("Distance('%s', '%s') = %f\n", gripper->GetName().c_str(), prop->model->GetName().c_str(), distGoal);}
+        if(DEBUG){printf("Distance('%s', '%s') = %f\n", gripper->GetName().c_str(), prop->model->GetName().c_str(), distGoal);}
 
-			if( episodeFrames > 1 )
-			{
-				const float distDelta = lastGoalDistance - distGoal;
-				const float alpha = 0.9f;
+        if( episodeFrames > 1 )
+        {
+            const float distDelta = lastGoalDistance - distGoal;
+            const float alpha = 0.9f;
 
-				// Compute the smoothed moving average of the delta of the distance to the goal
-				avgGoalDelta = (avgGoalDelta * alpha) + (distDelta * (1.0f - alpha));
-				float distPenalty = (1.0f - exp(distGoal));
+            // Compute the smoothed moving average of the delta of the distance to the goal
+            avgGoalDelta = (avgGoalDelta * alpha) + (distDelta * (1.0f - alpha));
+            float distPenalty = (1.0f - exp(distGoal));
 
-                if(avgGoalDelta > 0.01)
-					{rewardHistory = (REWARD_WIN + distPenalty * 0.1f) * 0.1f;}
-				else
-					{rewardHistory = REWARD_LOSS - distGoal * 2.0f;}
-				newReward = true;
-			}
-			lastGoalDistance = distGoal;
-		}
+            if(avgGoalDelta > 0.01)
+                {rewardHistory = (REWARD_WIN + distPenalty * 0.1f) * 0.1f;}
+            else
+                {rewardHistory = REWARD_LOSS - distGoal * 2.0f;}
+            newReward = true;
+        }
+        lastGoalDistance = distGoal;
+    }
 ```
 
 
@@ -333,48 +334,48 @@ Two set this challenge1 environment, the following steps:
 1. In `PropPlugin.cpp`, redefine the prop poses in `PropPlugin::Randomize()` to the following:
 
 ```C
-  pose.pos.x = randf(0.35f, 0.45f);
-  pose.pos.y = randf(-1.5f, 0.2f);
-  pose.pos.z = 0.0f;
+    pose.pos.x = randf(0.35f, 0.45f);
+    pose.pos.y = randf(-1.5f, 0.2f);
+    pose.pos.z = 0.0f;
 ```
 
 2. In `ArmPlugin.cpp`, replace `ResetPropDynamics();` set in the method `ArmPlugin::updateJoints()` with `RandomizeProps();`
 
 The object will instantiate at different locations along the x-axis.
 
-* Use a larger `INPUT_WIDTH` and `INPUT_HEIGHT` value to distinguish object more clear.
+* Use a larger `INPUT_WIDTH` and `INPUT_HEIGHT` value to distinguish object more clear. For all the cases it is used by default the output of the Gazebo camera that is only 64x64.
 
 ```C
-  #define INPUT_WIDTH   128
-  #define INPUT_HEIGHT  128
+    #define INPUT_WIDTH  64
+    #define INPUT_HEIGHT 64
 ```
 
 * Revise the intermediary reward, give more penalty for arm stop
 
 ```C
-		if( !checkGroundContact )
-		{
-			const float distGoal = BoxDistance(gripBBox, propBBox); // Compute the reward from distance to the goal
+    if( !checkGroundContact )
+    {
+        const float distGoal = BoxDistance(gripBBox, propBBox); // Compute the reward from distance to the goal
 
-			if(DEBUG){printf("Distance('%s', '%s') = %f\n", gripper->GetName().c_str(), prop->model->GetName().c_str(), distGoal);}
+        if(DEBUG){printf("Distance('%s', '%s') = %f\n", gripper->GetName().c_str(), prop->model->GetName().c_str(), distGoal);}
 
-			if( episodeFrames > 1 )
-			{
-				const float distDelta = lastGoalDistance - distGoal;
-				const float alpha = 0.9f;
+        if( episodeFrames > 1 )
+        {
+            const float distDelta = lastGoalDistance - distGoal;
+            const float alpha = 0.9f;
 
-				// Compute the smoothed moving average of the delta of the distance to the goal
-				avgGoalDelta = (avgGoalDelta * alpha) + (distDelta * (1.0f - alpha));
-				float distPenalty = (1.0f - exp(distGoal));
+            // Compute the smoothed moving average of the delta of the distance to the goal
+            avgGoalDelta = (avgGoalDelta * alpha) + (distDelta * (1.0f - alpha));
+            float distPenalty = (1.0f - exp(distGoal));
 
-                if(avgGoalDelta > 0.01)
-					{rewardHistory = (REWARD_WIN + distPenalty * 0.1f) * 0.1f;}
-				else
-					{rewardHistory = REWARD_LOSS - distGoal * 2.0f;}
-				newReward = true;
-			}
-			lastGoalDistance = distGoal;
-		}
+            if(avgGoalDelta > 0.01)
+                {rewardHistory = (REWARD_WIN + distPenalty * 0.1f) * 0.1f;}
+            else
+                {rewardHistory = REWARD_LOSS - distGoal * 2.0f;}
+            newReward = true;
+        }
+        lastGoalDistance = distGoal;
+    }
 ```
 
 3. In `gazebo-arm.world`, modify the tube model’s pose to `[0.75 0.75 0 0 0 0]`.
