@@ -6,9 +6,9 @@ The objective of this project is to create a Deep Q-Learning Network (DQN) agent
 
 [//]: # (Image References)
 
-[image1]: ./misc_images/objective1.jpg "Objective 1 minus 100 runs"
-[image2]: ./misc_images/objective1a.jpg "Objective 1 over 100 runs"
-[image3]: ./misc_images/objective2.jpg "Objective 2 over 100 runs"
+[image1]: ./misc_images/objective1.jpg "Objective 1 before at least 100 runs"
+[image2]: ./misc_images/objective1a.jpg "Objective 1 after at least 100 runs"
+[image3]: ./misc_images/objective2.jpg "Objective 2 after at least 100 runs"
 [image4]: ./misc_images/challenger.jpg "Chalenger"
 
 ---
@@ -302,11 +302,17 @@ Objective 1 was relatively simple to train, the robotic arm intuitively started 
 It was noted that it kept trying to explore other ways to tackle the problem, obtaining multiple solution approaches along the way. Ultimately, the latest version of the code for objective 1 managed to get to 90% accuracy almost right after 100 runs.
 
 ![alt text][image1]
-###### Figure 1.- Arm collision with target.
+###### Figure 1.- Arm collision with target before at least 100 runs.
+
+To demonstrate that it's a consistent learned behaviour and not just a fluke, the image below shows the result after at least 100 runs.
+
+![alt text][image2]
+###### Figure 1a.- Arm collision with target after at least 100 runs.
 
 | Task    | Total Runs   | Accuracy   |
 | :------ | :----------: | :--------: |
 | Arm     | 18           | 90.00%     |
+| Arm     | 100          | 91.74%     |
 
 
 ### Objective 2
@@ -318,7 +324,7 @@ However, as with objective 1, the agent was also displayed hitting the ground ha
 Nonetheless, for the purpose of this project, the robotic arm exceeded the minimum accuracy of 80% reaching up to 86% accuracy after almost 200 runs.
 
 ![alt text][image3]
-###### Figure 2.- Gripper collision with target.
+###### Figure 2.- Gripper collision with target after at least 100 runs.
 
 | Task          | Total Runs   | Accuracy   |
 | :------------ | :----------: | :--------: |
